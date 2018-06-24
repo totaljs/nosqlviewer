@@ -1,0 +1,188 @@
+@{layout('')}
+@{title('NoSQL embedded browser')}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=11" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="robots" content="all,follow" />
+	<link rel="stylesheet" href="//cdn.componentator.com/spa.min@15.css" />
+	<script src="//cdn.componentator.com/spa.min@15.js"></script>
+	@{import('meta', 'head', 'default.css', 'default.js', 'favicon.ico')}
+</head>
+<body data-jc="exec">
+
+	<div data-jc="LAZY confirm"></div>
+	<div data-jc="loading" class="hidden"></div>
+
+	<div class="padding" style="padding-bottom:0">
+		<nav class="toolbar" data-bind="browser.rows__show .filled:value instanceof Array">
+			<div class="hidden info filled">
+				<span data-bind="browser.filename__text:value"></span> / <b data-bind="browser.rows__!html:value.length.pluralize(@('# documents', '# document', '# documents', '# documents'))"></b>
+			</div>
+			<button name="open" data-jc="filebrowser__null__exec:browser/process"><i class="fa fa-folder-o"></i>@(Open)</button>
+			<button name="save" class="hidden filled exec" data-exec="browser/save"><i class="fa fa-floppy-o"></i>@(Save)</button>
+			<span></span>
+			<button name="remove" class="hidden filled exec" data-bind="browser.checked__show:value && value.length > 0" data-exec="browser/remove"><i class="fa fa-times-circle"></i>@(Remove rows)</button>
+		</nav>
+	</div>
+
+	<div data-jc="dragdropfiles__null__exec:browser/process" class="dragdrop" data-bind="browser.rows__show:value == null"><div><i class="fa fa-database fa-3x"></i><br /><br />@(<b>Drag &amp; Drop</b><br />NoSQL embedded database)</div></div>
+
+	<div class="padding" data-bind="browser.rows__show:value != null" style="padding-top:0">
+		<div data-jc="datagrid__browser.rows__click:browser/detail;colwidth:180;checked:browser.checked"></div>
+	</div>
+
+	<div data-jc="panel__common.panel__if:detail;icon:box;title:Document editor;width:400;background:false">
+		<div class="padding">
+			<div data-jc="objecteditor__browser.detail__skip:ROW" class="m"></div>
+			<div class="row">
+				<div class="col-xs-8 m" data-jc="validation__browser.detail">
+					<button name="submit" class="button button-small b exec" data-exec="browser/update" disabled><i class="fa fa-check-circle"></i>@(Update data)</button>
+				</div>
+				<div class="col-xs-4 m">
+					<button class="button button-small button-silver b exec" data-exec="browser/cancel">@(Cancel)</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+
+		PLUGIN('browser', function(exports) {
+
+			exports.detail = function(row) {
+				SET('browser.detail', CLONE(row), true);
+				SET('common.panel', 'detail');
+			};
+
+			exports.cancel = function() {
+				SET('common.panel', '');
+			};
+
+			exports.update = function() {
+				SET('common.panel', '');
+				var index = browser.rows.findIndex('ROW', browser.detail.ROW);
+				if (index !== -1) {
+					browser.rows[index] = browser.detail;
+					exports.element.SETTER('datagrid', 'refresh');
+				}
+			};
+
+			exports.remove = function() {
+				SETTER('confirm', 'show', '@(Are you sure you want to removed selected rows?)', ['"trash-o" @(Yes)', '@(Cancel)'], function(index) {
+
+					if (index == 1)
+						return;
+
+					SETTER('loading', 'show');
+					browser.checked.wait(function(row, next) {
+						var index = browser.rows.indexOf(row);
+						if (index !== -1)
+							browser.rows.splice(index, 1);
+						setTimeout(next, 10);
+					}, function() {
+						UPDATE('browser.rows');
+						SETTER('loading', 'hide', 1000);
+					});
+
+				});
+			};
+
+			exports.save = function() {
+
+				var REGBOOL = /":true/g;
+				var JSONBOOL = '":true ';
+				var rows = browser.rows;
+				var data = [];
+
+				for (var i = 0; i < rows.length; i++) {
+					var row = CLONE(rows[i]);
+					row.ROW = undefined;
+					data.push(JSON.stringify(row).replace(REGBOOL, JSONBOOL));
+				}
+
+				data.push('');
+
+				var file = new File([data.join('\n')], browser.filename, { type: 'text/plain;charset=utf-8' });
+				saveAs(file);
+			};
+
+			exports.process = function(files) {
+				var reader = new FileReader();
+				reader.onload = function() {
+					exports.parse(reader.result);
+					reader = null;
+				};
+
+				SET('browser.filename', files[0].name);
+				reader.readAsText(files[0]);
+			};
+
+			exports.parse = function(data) {
+				var lines = data.split('\n');
+				var tmp = {};
+				var cols = [];
+				var rows = [];
+
+				for (var i = 0; i < lines.length; i++) {
+					var line = lines[i].trim();
+
+					// Removed item
+					if (!line || line.substring[0] === '-')
+						continue;
+
+					var doc;
+
+					try {
+						doc = PARSE(line);
+					} catch (e) {
+						continue;
+					}
+
+					if (doc == null)
+						continue;
+
+					var keys = Object.keys(doc);
+
+					for (var j = 0; j < keys.length; j++) {
+						var key = keys[j];
+						if (tmp[key])
+							continue;
+						tmp[key] = 1;
+						var col = {};
+						col.name = key;
+						col.alignheader = 'center';
+						col.alignfilter = 'center';
+						col.template = '{{ {0} | nosqlrender }}'.format(key);
+						cols.push(col);
+					}
+
+					rows.push(doc);
+				}
+
+				exports.element.SETTER('datagrid', 'rebind', cols);
+				SET('browser.rows', rows);
+				SET('browser.checked', EMPTYARRAY);
+				SET('common.panel', '');
+				AJAX('POST /api/stats/', { filename: browser.filename, rows: rows.length, cols: cols.length });
+			};
+		});
+
+		var params = READPARAMS();
+		params.url && AJAX('GET /api/download/', { url: params.url }, function(response) {
+			if (response) {
+				SET('browser.filename', params.url);
+				EXEC('browser/parse', response);
+			}
+		});
+
+	</script>
+
+	<script async src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+
+</body>
+</html>

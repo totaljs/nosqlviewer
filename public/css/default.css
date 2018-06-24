@@ -1,0 +1,40 @@
+/*auto*/
+
+html,body { margin: 0; padding: 0; overflow: hidden; height: 100%; }
+body {}
+
+.dragdrop { height: 100%; width: 100%; background-color: white; border-top: 1px solid #E0E0E0; position: relative; }
+.dragdrop > div { width: 250px; position: absolute; left: 50%; top: 50%; margin: -100px 0 0 -125px; text-align: center; font-size: 16px; }
+#content { height: 100%; }
+
+.padding { padding: 20px; }
+
+.m { margin-bottom: 20px; }
+.b { font-weight: bold; }
+
+.nosql-undefined { display: block; text-align: center; color: #A0A0A0; }
+.nosql-null { display: block; text-align: center; color: gray; }
+.nosql-number { color: #006FE2; text-align: right; font-family: monospace; display: block; }
+.nosql-boolean { color: #AA9166; font-family: monospace; }
+.nosql-date { text-align: center; display: block; color: #A043F5; }
+.nosql-uid { font-weight: bold; display: block; font-family: monospace; text-align: center; }
+
+.toolbar { background-color: #F0F0F0; padding: 8px 10px; margin-bottom: 20px; border-radius: 2px; }
+.toolbar button { outline: 0; background-color: transparent; border: 1px solid transparent; border-radius: 3px; font-size: 12px; height: 24px; padding: 0 5px; margin: 0; color: black; margin-right: 5px; }
+.toolbar button .far, .toolbar button .fal, .toolbar button .fa { margin-right: 5px; }
+.toolbar button:hover { background-color: white; }
+.toolbar button:disabled { color: silver; cursor: not-allowed; background-color: #E0E0E0; box-shadow: none; }
+.toolbar button.right { float: right; margin-left: 5px; margin-right: 0; }
+.toolbar > span { margin: 2px 6px 0; border-left: 1px solid #D0D0D0; height: 20px; padding: 0 2px 0 0; vertical-align: middle; display: inline-block; position: relative; }
+.toolbar .selected { background-color: #FFE7A1 !important; box-shadow: 0 2px 3px rgba(0,0,0,0.05); }
+.toolbar > div { position: relative; display: inline-block; font-size: 12px; }
+.toolbar .info { float: right; margin: 4px 0 0 0; }
+
+.button { background-color: #4285F4; border: 0; padding: 0; margin: 0; color: white; cursor: pointer; outline: 0; width: 100%; border-radius: 2px; height: 50px; text-transform: uppercase; font-family: Arial; }
+.button:hover { opacity: 0.9; }
+.button:disabled { background-color: #E0E0E0; color: silver; cursor: not-allowed; box-shadow: none; opacity: 1; }
+.button .fa, .button .fal, .button .far { margin-right: 5px; }
+.button-small { height: 32px; font-size: 12px; }
+.button-silver { background-color: #D0D0D0; color: black; }
+
+.fr { float: right; }
