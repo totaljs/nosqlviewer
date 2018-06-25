@@ -99,10 +99,22 @@
 				var rows = browser.rows;
 				var data = [];
 
+				if (browser.schema) {
+					var tmp = '';
+					for (var i = 0; i < browser.schema.length; i++) {
+						var meta = browser.schema[i];
+						tmp += (tmp ? '|' : '') + meta.name + ':' + meta.type;
+					}
+					data.push(tmp);
+				}
+
 				for (var i = 0; i < rows.length; i++) {
 					var row = CLONE(rows[i]);
 					row.ROW = undefined;
-					data.push(JSON.stringify(row).replace(REGBOOL, JSONBOOL));
+					if (browser.schema)
+						data.push(exports.stringifyTable(browser.schema, row));
+					else
+						data.push(JSON.stringify(row).replace(REGBOOL, JSONBOOL));
 				}
 
 				data.push('');
@@ -114,7 +126,12 @@
 			exports.process = function(files) {
 				var reader = new FileReader();
 				reader.onload = function() {
-					exports.parse(reader.result);
+
+					if ((/\.table$/).test(browser.filename))
+						exports.parseTable(reader.result);
+					else
+						exports.parse(reader.result);
+
 					reader = null;
 				};
 
@@ -164,12 +181,118 @@
 					rows.push(doc);
 				}
 
+				SET('browser.schema', null);
+				exports.refresh(rows, cols);
+			};
+
+			exports.parseTableSchema = function(row) {
+				var schema = [];
+				row.split('|').forEach(function(item) {
+					var a = item.split(':');
+					schema.push({ name: a[0].trim(), type: a[1].trim() });
+				});
+				return schema;
+			};
+
+			exports.parseTableRow = function(schema, row) {
+
+				var obj = {};
+
+				for (var i = 0; i < schema.length; i++) {
+					var data = row.split('|');
+					var meta = schema[i];
+					var val = data[i + 1];
+
+					switch (meta.type) {
+						case 'string':
+							break;
+						case 'number':
+							val = +val;
+							break;
+						case 'boolean':
+							val = val == '1' || val == 'true' || val == 'on';
+							break;
+						case 'date':
+							val = val ? new Date(val) : null;
+							break;
+						case 'object':
+							val = val ? PARSE(val) : null;
+							break;
+					}
+					obj[meta.name] = val;
+				}
+
+				return obj;
+			};
+
+			exports.parseTable = function(data) {
+
+				var lines = data.split('\n');
+				var cols = [];
+				var rows = [];
+
+				var schema = exports.parseTableSchema(lines[0]);
+
+				for (var j = 0; j < schema.length; j++) {
+					var col = {};
+					col.name = schema[j].name;
+					col.alignheader = 'center';
+					col.alignfilter = 'center';
+					col.template = '{{ {0} | nosqlrender }}'.format(col.name);
+					cols.push(col);
+				}
+
+				for (var i = 1; i < lines.length; i++) {
+					var line = lines[i].trim();
+
+					// Removed item
+					if (!line || line.substring[0] === '-')
+						continue;
+
+					var doc = exports.parseTableRow(schema, line);
+					rows.push(doc);
+				}
+
+				SET('browser.schema', schema);
+				exports.refresh(rows, cols);
+			};
+
+			exports.stringifyTable = function(schema, row) {
+				var data = '+';
+				for (var i = 0; i < schema.length; i++) {
+					var meta = schema[i];
+					var val = row[meta.name];
+					switch (meta.type) {
+						case 'string':
+							val = val ? val : '';
+							break;
+						case 'number':
+							val = (val || 0);
+							break;
+						case 'boolean':
+							val = val == true ? '1' : '0';
+							break;
+						case 'date':
+							val = val ? val.toISOString() : '';
+							break;
+						case 'object':
+							val = val ? JSON.stringify(val) : '';
+							break;
+					}
+					data += '|' + val;
+				}
+
+				return data;
+			};
+
+			exports.refresh = function(rows, cols) {
 				exports.element.SETTER('datagrid', 'rebind', cols);
 				SET('browser.rows', rows);
 				SET('browser.checked', EMPTYARRAY);
 				SET('common.panel', '');
 				AJAX('POST /api/stats/', { filename: browser.filename, rows: rows.length, cols: cols.length });
 			};
+
 		});
 
 		var params = READPARAMS();
