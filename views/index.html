@@ -54,6 +54,9 @@
 
 		PLUGIN('browser', function(exports) {
 
+			var rescape = /\||\n|\r/g;
+			var runescape = /%7C|%0D|%0A/g;
+
 			exports.detail = function(row) {
 				SET('browser.detail', CLONE(row), true);
 				SET('common.panel', 'detail');
@@ -206,7 +209,7 @@
 					switch (meta.type) {
 						case 'string':
 							if (encode && val)
-								val = val.replace(/%7C/g, '|');
+								val = val.replace(runescape, exports.unescape);
 							break;
 						case 'number':
 							val = +val;
@@ -218,7 +221,7 @@
 							val = val ? new Date(val) : null;
 							break;
 						case 'object':
-							val = val ? PARSE(encode ? val.replace(/%7C/g, '|') : val) : null;
+							val = val ? PARSE(encode ? val.replace(runescape, exports.unescape) : val) : null;
 							break;
 					}
 					obj[meta.name] = val;
@@ -269,9 +272,9 @@
 					switch (meta.type) {
 						case 'string':
 							val = val ? val : '';
-							if (val && val.indexOf('|') !== -1) {
+							if (val && rescape.test(val)) {
 								plus = '*';
-								val = val.replace(/\|/g, '%7C');
+								val = val.replace(rescape, exports.escape);
 							}
 							break;
 						case 'number':
@@ -285,9 +288,9 @@
 							break;
 						case 'object':
 							val = val ? JSON.stringify(val) : '';
-							if (val && val.indexOf('|') !== -1) {
+							if (val && rescape.test(val)) {
 								plus = '*';
-								val = val.replace(/\|/g, '%7C');
+								val = val.replace(rescape, exports.escape);
 							}
 							break;
 					}
@@ -305,6 +308,30 @@
 				SET('browser.checked', EMPTYARRAY);
 				SET('common.panel', '');
 				AJAX('POST /api/stats/', { filename: browser.filename, rows: rows.length, cols: cols.length });
+			};
+
+			exports.unescape = function(c) {
+				switch (c) {
+					case '%0A':
+						return '\n';
+					case '%0D':
+						return '\r';
+					case '%7C':
+						return '|';
+				}
+				return c;
+			};
+
+			exports.escape = function(c) {
+				switch (c) {
+					case '\n':
+						return '%0A';
+					case '\r':
+						return '%0D';
+					case '|':
+						return '%7C';
+				}
+				return c;
 			};
 
 		});
