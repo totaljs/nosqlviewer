@@ -54,7 +54,7 @@
 
 		PLUGIN('browser', function(exports) {
 
-			var rescape = /\||\n|\r/g;
+			var rescape = /[|\n\r]/g;
 			var runescape = /%7C|%0D|%0A/g;
 
 			exports.detail = function(row) {
