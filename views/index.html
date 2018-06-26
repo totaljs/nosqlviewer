@@ -298,8 +298,10 @@
 			};
 
 			exports.refresh = function(rows, cols) {
-				exports.element.SETTER('datagrid', 'rebind', cols);
-				SET('browser.rows', rows);
+				FIND('datagrid', function(com) {
+					com.rebind(cols);
+					com.set(rows);
+				});
 				SET('browser.checked', EMPTYARRAY);
 				SET('common.panel', '');
 				AJAX('POST /api/stats/', { filename: browser.filename, rows: rows.length, cols: cols.length });
