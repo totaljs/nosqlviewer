@@ -1,2 +1,5 @@
 sftp-config.json
 versions
+databases/
+tmp/
+debug.pid
