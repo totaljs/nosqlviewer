@@ -35,7 +35,7 @@ COMPONENT('dragdropfiles', function(self, config) {
 	self.mirror = function(cls) {
 		var arr = cls.split(' ');
 		for (var i = 0, length = arr.length; i < length; i++) {
-			arr[i] = arr[i].replace(/^(\+|-)/g, function(c) {
+			arr[i] = arr[i].replace(/^([+\-])/g, function(c) {
 				return c === '+' ? '-' : '+';
 			});
 		}
@@ -120,7 +120,7 @@ COMPONENT('datagrid', 'checkbox:true;colwidth:150;rowheight:24;filterlabel:Filte
 
 		self.update = function(rows, noscroll) {
 
-			if (noscroll != true)
+			if (noscroll !== true)
 				self.el.prop('scrollTop', 0);
 
 			self.pos = -1;
@@ -449,7 +449,7 @@ COMPONENT('datagrid', 'checkbox:true;colwidth:150;rowheight:24;filterlabel:Filte
 				opt.filtervalues[col.id] = val;
 
 			if (val) {
-				if (opt.filter[name] == val)
+				if (opt.filter[name] === val)
 					return;
 				opt.filter[name] = val;
 			} else
@@ -897,7 +897,7 @@ COMPONENT('datagrid', 'checkbox:true;colwidth:150;rowheight:24;filterlabel:Filte
 
 		self.resize();
 		self.renderrows(output);
-		opt.cluster && opt.cluster.update(opt.render, opt.scroll == false);
+		opt.cluster && opt.cluster.update(opt.render, opt.scroll === false);
 		self.scrolling();
 	};
 
@@ -979,7 +979,7 @@ COMPONENT('datagrid', 'checkbox:true;colwidth:150;rowheight:24;filterlabel:Filte
 	self.scrolling = function() {
 		config.checkbox && setTimeout2(self.ID, function() {
 			vbody.find('.dg-checkbox-input').each(function() {
-				this.checked = opt.selected[this.value] == 1;
+				this.checked = opt.selected[this.value] === 1;
 			});
 		}, 80, 10);
 	};
@@ -1046,7 +1046,7 @@ COMPONENT('datagrid', 'checkbox:true;colwidth:150;rowheight:24;filterlabel:Filte
 
 				if (val2 == null) {
 
-					val2 = filter.trim().replace(/\s-\s/, '/').split(/\/|\||\\|,/).trim();
+					val2 = filter.trim().replace(/\s-\s/, '/').split(/[\/|\\,]/).trim();
 					var arr = opt.filtercache[column] = [];
 
 					for (var j = 0; j < val2.length; j++) {
@@ -1557,7 +1557,7 @@ COMPONENT('objecteditor', 'null:true', function(self, config) {
 			var type = typeof(val);
 			if (type === 'string') {
 				tmp.value = Tangular.helpers.encode(tmp.value);
-				if (tmp.value.indexOf('\n') == -1)
+				if (tmp.value.indexOf('\n') === -1)
 					builder.push(tstring.arg(tmp));
 				else
 					builder.push(tstringmultiline.arg(tmp));
