@@ -269,8 +269,10 @@
 					switch (meta.type) {
 						case 'string':
 							val = val ? val : '';
-							if (val && val.indexOf('|') !== -1)
+							if (val && val.indexOf('|') !== -1) {
+								plus = '*';
 								val = val.replace(/\|/g, '%7C');
+							}
 							break;
 						case 'number':
 							val = (val || 0);
@@ -283,14 +285,16 @@
 							break;
 						case 'object':
 							val = val ? JSON.stringify(val) : '';
-							if (val && val.indexOf('|') !== -1)
+							if (val && val.indexOf('|') !== -1) {
+								plus = '*';
 								val = val.replace(/\|/g, '%7C');
+							}
 							break;
 					}
 					data += '|' + val;
 				}
 
-				return data;
+				return plus + data;
 			};
 
 			exports.refresh = function(rows, cols) {
