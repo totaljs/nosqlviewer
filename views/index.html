@@ -1,5 +1,5 @@
 @{layout('')}
-@{title('NoSQL embedded database browser')}
+@{title('NoSQL embedded database')}
 
 <!DOCTYPE html>
 <html>
@@ -201,10 +201,12 @@
 				for (var i = 0; i < schema.length; i++) {
 					var data = row.split('|');
 					var meta = schema[i];
+					var encode = data[0] === '*';
 					var val = data[i + 1];
-
 					switch (meta.type) {
 						case 'string':
+							if (encode && val)
+								val = val.replace(/%7C/g, '|');
 							break;
 						case 'number':
 							val = +val;
@@ -216,7 +218,7 @@
 							val = val ? new Date(val) : null;
 							break;
 						case 'object':
-							val = val ? PARSE(val) : null;
+							val = val ? PARSE(encode ? val.replace(/%7C/g, '|') : val) : null;
 							break;
 					}
 					obj[meta.name] = val;
@@ -258,13 +260,17 @@
 			};
 
 			exports.stringifyTable = function(schema, row) {
-				var data = '+';
+				var data = '';
+				var plus = '+';
+
 				for (var i = 0; i < schema.length; i++) {
 					var meta = schema[i];
 					var val = row[meta.name];
 					switch (meta.type) {
 						case 'string':
 							val = val ? val : '';
+							if (val && val.indexOf('|') !== -1)
+								val = val.replace(/\|/g, '%7C');
 							break;
 						case 'number':
 							val = (val || 0);
@@ -277,6 +283,8 @@
 							break;
 						case 'object':
 							val = val ? JSON.stringify(val) : '';
+							if (val && val.indexOf('|') !== -1)
+								val = val.replace(/\|/g, '%7C');
 							break;
 					}
 					data += '|' + val;
