@@ -215,6 +215,7 @@
 							val = +val;
 							break;
 						case 'boolean':
+						case 'bool':
 							val = val == '1' || val == 'true' || val == 'on';
 							break;
 						case 'date':
@@ -281,6 +282,7 @@
 							val = (val || 0);
 							break;
 						case 'boolean':
+						case 'bool':
 							val = val == true ? '1' : '0';
 							break;
 						case 'date':
