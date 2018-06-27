@@ -219,7 +219,7 @@
 							val = val == '1' || val == 'true' || val == 'on';
 							break;
 						case 'date':
-							val = val ? new Date(val) : null;
+							obj[key] = val ? new Date(val.substring(10, 11) === 'T' ? val : +val) : null;
 							break;
 						case 'object':
 							val = val ? PARSE(encode ? val.replace(runescape, exports.unescape) : val) : null;
@@ -286,7 +286,7 @@
 							val = val == true ? '1' : '0';
 							break;
 						case 'date':
-							val = val ? val.toISOString() : '';
+							val = val ? val.getTime() : '';
 							break;
 						case 'object':
 							val = val ? JSON.stringify(val) : '';
