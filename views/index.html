@@ -219,7 +219,7 @@
 							val = val == '1' || val == 'true' || val == 'on';
 							break;
 						case 'date':
-							obj[key] = val ? new Date(val.substring(10, 11) === 'T' ? val : +val) : null;
+							val = val ? new Date(val.substring(10, 11) === 'T' ? val : +val) : null;
 							break;
 						case 'object':
 							val = val ? PARSE(encode ? val.replace(runescape, exports.unescape) : val) : null;
