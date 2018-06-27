@@ -106,7 +106,7 @@
 					var tmp = '';
 					for (var i = 0; i < browser.schema.length; i++) {
 						var meta = browser.schema[i];
-						tmp += (tmp ? '|' : '') + meta.name + ':' + meta.type;
+						tmp += (tmp ? '|' : '') + meta.name + ':' + (meta.type || 'string');
 					}
 					data.push(tmp);
 				}
@@ -192,7 +192,7 @@
 				var schema = [];
 				row.split('|').forEach(function(item) {
 					var a = item.split(':');
-					schema.push({ name: a[0].trim(), type: a[1].trim() });
+					schema.push({ name: a[0].trim(), type: a[1].trim() || 'string' });
 				});
 				return schema;
 			};
