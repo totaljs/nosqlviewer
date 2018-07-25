@@ -4,7 +4,7 @@ html,body { margin: 0; padding: 0; overflow: hidden; height: 100%; }
 body {}
 
 .dragdrop { height: 100%; width: 100%; background-color: white; border-top: 1px solid #E0E0E0; position: relative; }
-.dragdrop > div { width: 250px; position: absolute; left: 50%; top: 50%; margin: -100px 0 0 -125px; text-align: center; font-size: 16px; }
+.dragdrop > div { max-width: 350px; position: absolute; left: 50%; top: 50%; margin: -100px 0 0 -125px; text-align: center; font-size: 16px; }
 #content { height: 100%; }
 
 .padding { padding: 20px; }
@@ -38,3 +38,4 @@ body {}
 .button-silver { background-color: #D0D0D0; color: black; }
 
 .fr { float: right; }
+.mr5 { margin-right: 5px; }
