@@ -18,56 +18,62 @@
 	<div data-jc="LAZY confirm"></div>
 	<div data-jc="loading" class="hidden"></div>
 
-	<div class="padding" style="padding-bottom:0">
-		<nav class="toolbar" data-bind="browser.rows__show .filled:value instanceof Array">
-			<div class="hidden info filled">
-				<span data-bind="browser.filename__text:value"></span> / <b data-bind="browser.rows__!html:value.length.pluralize(@('# documents', '# document', '# documents', '# documents'))"></b>
-			</div>
-			<button name="open" data-jc="filebrowser__null__exec:browser/process"><i class="fa fa-folder-o"></i>@(Open)</button>
-			<button name="save" class="hidden filled exec" data-exec="browser/save"><i class="fa fa-floppy-o"></i>@(Save)</button>
-			<span></span>
-			<button name="remove" class="hidden filled exec" data-bind="browser.checked__show:value && value.length > 0" data-exec="browser/remove"><i class="fa fa-times-circle"></i>@(Remove rows)</button>
-		</nav>
-	</div>
+	<div data-jc="dragdropfiles__null__exec:browser/process" style="height:100%">
 
-	<div data-jc="dragdropfiles__null__exec:browser/process" class="dragdrop" data-bind="browser.open__show:value == null"><div><i class="fa fa-database fa-3x"></i><br /><br />@(<b>Drag &amp; Drop</b><br />NoSQL database or NoSQL binary file)</div></div>
-
-	<div class="padding" data-bind="browser.binary__show:value != null__!template">
-		<script type="text/html">
-			<div class="row">
-				<div class="col-md-4 col-md-offset-4">
-					<table class="table table-bordered">
-						<tr>
-							<td class="b"><i class="far fa-file mr5"></i>{{ value.name }}</td>
-						</tr>
-						<tr>
-							<td>{{ value.type }}</td>
-						</tr>
-						{{ if value.width && value.height }}
-						<tr>
-							<td>{{ value.width }}x{{ value.height }} @(pixels)</td>
-						</tr>
-						{{ fi }}
-						{{ if value.custom }}
-						<tr>
-							<td>{{ value.custom }}</td>
-						</tr>
-						{{ fi }}
-						<tr>
-							<td><a href="javascript:void(0)" class="exec" data-exec="browser/download">@(Download file) ({{ value.size | filesize }})</a></td>
-						</tr>
-					</table>
+		<div class="padding" style="padding-bottom:0">
+			<nav class="toolbar" data-bind="browser.rows__show .filled:value instanceof Array">
+				<div class="hidden info filled">
+					<span data-bind="browser.filename__text:value"></span> / <b data-bind="browser.rows__!html:value.length.pluralize(@('# documents', '# document', '# documents', '# documents'))"></b>
 				</div>
-			</div>
-			<div><img src="data:{{ value.type }};base64,{{ value.data | raw }}" class="img-responsive" alt="{{ value.name }}" style="margin:0 auto" /></div>
-		</script>
+				<button name="open" data-jc="filebrowser__null__exec:browser/process"><i class="fa fa-folder-o"></i>@(Open)</button>
+				<button name="save" class="hidden filled exec" data-exec="browser/save"><i class="fa fa-floppy-o"></i>@(Save)</button>
+				<span></span>
+				<button name="remove" class="hidden filled exec" data-bind="browser.checked__show:value && value.length > 0" data-exec="browser/remove"><i class="fa fa-times-circle"></i>@(Remove rows)</button>
+			</nav>
+		</div>
+
+		<div class="dragdrop" data-bind="browser.open__show:value == null"><div><i class="fa fa-database fa-3x"></i><br /><br />@(<b>Drag &amp; Drop</b><br />NoSQL database or NoSQL binary file)</div></div>
+
+		<div class="padding hidden" data-bind="browser.binary__show:value != null__!template">
+			<script type="text/html">
+				<div class="row">
+					<div class="col-md-4 col-md-offset-4">
+						<table class="table table-bordered">
+							<tr>
+								<td class="b"><i class="far fa-file mr5"></i>{{ value.name }}</td>
+							</tr>
+							<tr>
+								<td>{{ value.type }}</td>
+							</tr>
+							{{ if value.width && value.height }}
+							<tr>
+								<td>{{ value.width }}x{{ value.height }} @(pixels)</td>
+							</tr>
+							{{ fi }}
+							{{ if value.custom }}
+							<tr>
+								<td>{{ value.custom }}</td>
+							</tr>
+							{{ fi }}
+							<tr>
+								<td><a href="javascript:void(0)" class="exec" data-exec="browser/download">@(Download file) ({{ value.size | filesize }})</a></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				{{ if value.data }}
+				<div><img src="data:{{ value.type }};base64,{{ value.data | raw }}" class="img-responsive" alt="{{ value.name }}" style="margin:0 auto" /></div>
+				{{ fi }}
+			</script>
+		</div>
+
+		<div class="padding hidden" data-bind="browser.rows__show:value != null" style="padding-top:0">
+			<div data-jc="datagrid__browser.rows__click:browser/detail;colwidth:180;checked:browser.checked"></div>
+		</div>
+
 	</div>
 
-	<div class="padding" data-bind="browser.rows__show:value != null" style="padding-top:0">
-		<div data-jc="datagrid__browser.rows__click:browser/detail;colwidth:180;checked:browser.checked"></div>
-	</div>
-
-	<div data-jc="panel__common.panel__if:detail;icon:box;title:Document editor;width:400;background:false">
+	<div data-jc="panel__common.panel__if:detail;icon:box;title:Document editor;width:400;background:false" class="hidden">
 		<div class="padding">
 			<div data-jc="objecteditor__browser.detail__skip:ROW" class="m"></div>
 			<div class="row">
@@ -174,9 +180,9 @@
 					SET('browser.open', true);
 
 					if (isfile) {
-						var meta = PARSE(new TextDecoder("utf-8").decode(reader.result.slice(0, 2000)).trim());
+						var meta = PARSE(new TextDecoder('utf-8').decode(reader.result.slice(0, 2000)).trim());
 						SET('browser.rows', null);
-						meta.data = toBase64(reader.result.slice(2000));
+						meta.data = meta.type.substring(0, 6) === 'image/' ? toBase64(reader.result.slice(2000)) : null;
 						meta.raw = reader.result.slice(2000);
 						if (meta.custom)
 							meta.custom = JSON.stringify(meta.custom);
