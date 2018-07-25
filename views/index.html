@@ -30,7 +30,38 @@
 		</nav>
 	</div>
 
-	<div data-jc="dragdropfiles__null__exec:browser/process" class="dragdrop" data-bind="browser.rows__show:value == null"><div><i class="fa fa-database fa-3x"></i><br /><br />@(<b>Drag &amp; Drop</b><br />NoSQL embedded database)</div></div>
+	<div data-jc="dragdropfiles__null__exec:browser/process" class="dragdrop" data-bind="browser.open__show:value == null"><div><i class="fa fa-database fa-3x"></i><br /><br />@(<b>Drag &amp; Drop</b><br />NoSQL database or NoSQL binary file)</div></div>
+
+	<div class="padding" data-bind="browser.binary__show:value != null__!template">
+		<script type="text/html">
+			<div class="row">
+				<div class="col-md-4 col-md-offset-4">
+					<table class="table table-bordered">
+						<tr>
+							<td><i class="far fa-file mr5"></i>{{ value.name }}</td>
+						</tr>
+						<tr>
+							<td>{{ value.type }}</td>
+						</tr>
+						{{ if value.width && value.height }}
+						<tr>
+							<td>{{ value.width }}x{{ value.height }} pixels</td>
+						</tr>
+						{{ fi }}
+						{{ if value.custom }}
+						<tr>
+							<td>{{ value.custom }}</td>
+						</tr>
+						{{ fi }}
+						<tr>
+							<td><a href="javascript:void(0)" class="exec" data-exec="browser/download">@(Download file) ({{ value.size | filesize }})</a></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div><img src="data:{{ value.type }};base64,{{ value.data | raw }}" class="img-responsive" alt="{{ value.name }}" style="margin:0 auto" /></div>
+		</script>
+	</div>
 
 	<div class="padding" data-bind="browser.rows__show:value != null" style="padding-top:0">
 		<div data-jc="datagrid__browser.rows__click:browser/detail;colwidth:180;checked:browser.checked"></div>
@@ -126,9 +157,34 @@
 				saveAs(file);
 			};
 
+			exports.download = function() {
+				var file = new File([browser.binary.raw], browser.binary.name, { type: browser.binary.type });
+				saveAs(file);
+			};
+
 			exports.process = function(files) {
+
+				SET('browser.filename', files[0].name);
+
+				var isfile = (/\.(nosql-binary|file$)/).test(browser.filename);
 				var reader = new FileReader();
+
 				reader.onload = function() {
+
+					SET('browser.open', true);
+
+					if (isfile) {
+						var meta = PARSE(new TextDecoder("utf-8").decode(reader.result.slice(0, 2000)).trim());
+						SET('browser.rows', null);
+						meta.data = toBase64(reader.result.slice(2000));
+						meta.raw = reader.result.slice(2000);
+						if (meta.custom)
+							meta.custom = JSON.stringify(meta.custom);
+						SET('browser.binary', meta);
+						return;
+					}
+
+					SET('browser.binary', null);
 
 					if ((/\.table$/).test(browser.filename))
 						exports.parseTable(reader.result);
@@ -138,8 +194,10 @@
 					reader = null;
 				};
 
-				SET('browser.filename', files[0].name);
-				reader.readAsText(files[0]);
+				if (isfile)
+					reader.readAsArrayBuffer(files[0]);
+				else
+					reader.readAsText(files[0]);
 			};
 
 			exports.parse = function(data) {
