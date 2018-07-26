@@ -160,7 +160,7 @@
 				data.push('');
 
 				var file = new File([data.join('\n')], browser.filename, { type: 'text/plain;charset=utf-8' });
-				saveAs(file);
+				saveAs(file, browser.filename, true);
 			};
 
 			exports.download = function() {
