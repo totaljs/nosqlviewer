@@ -337,7 +337,23 @@
 					var col = {};
 					col.name = schema[j].name;
 					col.alignheader = 'center';
+					col.alignfima = exports.parseTableSchema(lines[0]);
+
+				for (var j = 0; j < schema.length; j++) {
+					var col = {};
+					col.name = schema[j].name;
+					col.alignheader = 'center';
 					col.alignfilter = 'center';
+					col.template = '{{ {0} | nosqlrender }}'.format(col.name);
+					cols.push(col);
+				}
+
+				for (var i = 1; i < lines.length; i++) {
+					var line = lines[i].trim();
+
+					// Removed item
+					if (!line || line.substring[0] === '-')
+						continlter = 'center';
 					col.template = '{{ {0} | nosqlrender }}'.format(col.name);
 					cols.push(col);
 				}

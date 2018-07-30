@@ -3,3 +3,6 @@ versions
 databases/
 tmp/
 debug.pid
+
+node_modules/
+

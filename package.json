@@ -1,0 +1,20 @@
+{
+  "name": "nosqlviewer",
+  "version": "1.0.0",
+  "main": "electron.js",
+  "repository": "https://github.com/michalCapo/nosqlviewer.git",
+  "author": "Michal Capo <michal.capo@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-packager ./ --platform=win32",
+    "pack:lin": "electron-packager ./ --platform=linux",
+    "pack:mac": "electron-packager ./ --platform=darwin",
+    "pack": "rm -fr nosqlviewer-* && yarn pack:win && yarn pack:lin && yarn pack:mac"
+  },
+  "dependencies": {
+    "electron": "^3.0.0-beta.3",
+    "electron-packager": "^12.1.0",
+    "total.js": "^3.0.0-95"
+  }
+}
