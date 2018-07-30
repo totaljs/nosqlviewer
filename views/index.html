@@ -26,9 +26,9 @@
 					<span data-bind="browser.filename__text:value"></span> / <b data-bind="browser.rows__!html:value.length.pluralize(@('# documents', '# document', '# documents', '# documents'))"></b>
 				</div>
 				<button name="open" data-jc="filebrowser__null__exec:browser/process"><i class="fa fa-folder-o"></i>@(Open)</button>
-				<button name="save" class="hidden filled exec" data-exec="browser/save"><i class="fa fa-floppy-o"></i>@(Save)</button>
 				<span></span>
-				<button name="remove" class="hidden filled exec" data-bind="browser.checked__show:value && value.length > 0" data-exec="browser/remove"><i class="fa fa-times-circle"></i>@(Remove rows)</button>
+				<button name="save" class="hidden filled exec" data-exec="browser/save"><i class="fa fa-floppy-o"></i>@(Save)</button>
+				<button name="remove" class="hidden filled exec red" data-bind="browser.checked__show:value && value.length > 0" data-exec="browser/remove"><i class="fa fa-times-circle"></i>@(Remove rows)</button>
 			</nav>
 		</div>
 
@@ -89,6 +89,29 @@
 
 	<script>
 
+		$(window).on('paste', function(e) {
+			var n = e.target.nodeName;
+			if (n === 'INPUT' || n === 'TEXTAREA' || n === 'SELECT')
+				return;
+			e.preventDefault();
+			e.stopPropagation();
+
+			var text = e.originalEvent.clipboardData.getData('text/plain');
+			var filename = '';
+
+			if ((/^(-)?\{/).test(text)) {
+				filename = 'clipboard.nosql';
+				EXEC('browser/parse', text);
+			} else {
+				filename = 'clipboard.table';
+				EXEC('browser/parseTable', text);
+			}
+
+			SET('browser.filename', filename);
+			SET('browser.open', true);
+			SET('browser.binary', null);
+		});
+
 		PLUGIN('browser', function(exports) {
 
 			var rescape = /[|\n\r]/g;
@@ -101,6 +124,13 @@
 
 			exports.cancel = function() {
 				SET('common.panel', '');
+			};
+
+			exports.paste = function() {
+				$('textarea').focus();
+				setTimeout(function() {
+					document.execCommand('paste');
+				}, 100);
 			};
 
 			exports.update = function() {
