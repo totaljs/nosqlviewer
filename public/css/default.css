@@ -11,6 +11,7 @@ body {}
 
 .m { margin-bottom: 20px; }
 .b { font-weight: bold; }
+.red { color: red !important; }
 
 .nosql-undefined { display: block; text-align: center; color: #A0A0A0; }
 .nosql-null { display: block; text-align: center; color: gray; }
