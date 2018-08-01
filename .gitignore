@@ -1,3 +1,6 @@
+.idea
+.vscode
+
 sftp-config.json
 versions
 databases/
