@@ -16,6 +16,8 @@
 <body data-jc="exec">
 
 	<div data-jc="LAZY confirm"></div>
+	<div data-jc="LAZY clipboard"></div>
+	<div data-jc="LAZY snackbar"></div>
 	<div data-jc="loading" class="hidden"></div>
 
 	<div data-jc="dragdropfiles__null__exec:browser/process" style="height:100%">
@@ -29,6 +31,7 @@
 				<span></span>
 				<button name="csv" class="hidden filled exec" data-exec="browser/csv" title="@(CSV export)"><i class="fa fa-file-alt"></i>@(Export)</button>
 				<button name="save" class="hidden filled exec" data-exec="browser/save" title="@(Download file)"><i class="fa fa-floppy-o"></i>@(Save)</button>
+				<button name="csv" class="hidden filled exec" data-exec="browser/copy" title="@(Copy to clipboard)"><i class="fa fa-copy"></i>@(Copy)</button>
 				<button name="remove" class="hidden exec red" data-bind="browser.checked__show:value && value.length > 0" data-exec="browser/remove"><i class="fa fa-times-circle"></i>@(Remove rows)</button>
 			</nav>
 		</div>
@@ -145,7 +148,7 @@
 			exports.csvexport = function() {
 
 				var fields = csvexport.fields.split(',').trim();
-				var rows = FIND('datagrid').rows();
+				var rows = csvexport.filter ? FIND('datagrid').rows() : browser.rows;
 				var data = [];
 				var sub = [];
 
@@ -223,8 +226,7 @@
 				});
 			};
 
-			exports.save = function() {
-
+			exports.getData = function() {
 				var REGBOOL = /":true/g;
 				var JSONBOOL = '":true ';
 				var rows = browser.rows;
@@ -249,7 +251,16 @@
 				}
 
 				data.push('');
+				return data;
+			};
 
+			exports.copy = function() {
+				SETTER('clipboard', 'copy', exports.getData().join('\n'));
+				SETTER('snackbar', 'success', 'Data have been copied into your clipboard.');
+			};
+
+			exports.save = function() {
+				var data = exports.getData();
 				var file = new File([data.join('\n')], browser.filename, { type: 'text/plain;charset=utf-8' });
 				saveAs(file, browser.filename, true);
 			};
