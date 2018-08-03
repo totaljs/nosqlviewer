@@ -3,13 +3,17 @@
 - [__Live chat with professional support__](https://messenger.totaljs.com)
 - [__HelpDesk with professional support__](https://helpdesk.totaljs.com)
 
-# NoSQL Embedded Database Browser
+# NoSQL Embedded Database Viewer
 
 [![MIT License][license-image]][license-url]
 
 - install latest version of Total.js from NPM `$ npm install total.js`
 - run `$ node debug.js`
 - open browser `http://127.0.0.1:8000`
+
+## Electron
+
+If you want to build NoSQL viewer to Electron then visit this repository: <https://github.com/totaljs/nosqlviewerapp>.
 
 ## Contact
 

@@ -1101,6 +1101,10 @@ COMPONENT('datagrid', 'checkbox:true;colwidth:150;rowheight:24;filterlabel:Filte
 		return output;
 	};
 
+	self.rows = function() {
+		return opt.rows.slice(0);
+	};
+
 	self.parseDate = function(val, second) {
 		var index = val.indexOf('.');
 		if (index === -1) {
@@ -1810,5 +1814,463 @@ COMPONENT('loading', function(self) {
 			self.aclass('hidden');
 		}, timeout || 1);
 		return self;
+	};
+});
+
+COMPONENT('inlineform', 'icon:circle-o', function(self, config) {
+
+	var W = window;
+	var dw = 300;
+
+	if (!W.$$inlineform) {
+		W.$$inlineform = true;
+		$(document).on('click', '.ui-inlineform-close', function() {
+			SETTER('inlineform', 'hide');
+		});
+		$(window).on('resize', function() {
+			SETTER('inlineform', 'hide');
+		});
+	}
+
+	self.readonly();
+	self.submit = function() {
+		if (config.submit)
+			EXEC(config.submit, self);
+		else
+			self.hide();
+	};
+
+	self.cancel = function() {
+		config.cancel && EXEC(config.cancel, self);
+		self.hide();
+	};
+
+	self.hide = function() {
+		if (self.hclass('hidden'))
+			return;
+		self.release(true);
+		self.aclass('hidden');
+		self.find('.ui-inlineform').rclass('ui-inlineform-animate');
+	};
+
+	self.icon = function(value) {
+		var el = this.rclass2('fa');
+		value.icon && el.aclass('fa fa-' + value.icon);
+	};
+
+	self.make = function() {
+
+		$(document.body).append('<div id="{0}" class="hidden ui-inlineform-container" style="max-width:{1}"><div class="ui-inlineform"><i class="fa fa-caret-up ui-inlineform-arrow"></i><div class="ui-inlineform-title" data-bind="@config__html span:value.title__change .ui-inlineform-icon:@icon"><button class="ui-inlineform-close"><i class="fa fa-times"></i></button><i class="ui-inlineform-icon"></i><span></span></div></div></div>'.format(self.ID, (config.width || dw) + 'px', self.path));
+
+		var el = $('#' + self.ID);
+		el.find('.ui-inlineform')[0].appendChild(self.dom);
+		self.rclass('hidden');
+		self.replace(el);
+
+		self.find('button').on('click', function() {
+			var el = $(this);
+			switch (this.name) {
+				case 'submit':
+					if (el.hclass('exec'))
+						self.hide();
+					else
+						self.submit(self.hide);
+					break;
+				case 'cancel':
+					!this.disabled && self[this.name](self.hide);
+					break;
+			}
+		});
+
+		config.enter && self.event('keydown', 'input', function(e) {
+			e.which === 13 && !self.find('button[name="submit"]')[0].disabled && setTimeout(function() {
+				self.submit(self.hide);
+			}, 800);
+		});
+	};
+
+	self.toggle = function(el, position, offsetX, offsetY) {
+		if (self.hclass('hidden'))
+			self.show(el, position, offsetX, offsetY);
+		else
+			self.hide();
+	};
+
+	self.show = function(el, position, offsetX, offsetY) {
+
+		SETTER('inlineform', 'hide');
+
+		self.rclass('hidden');
+		self.release(false);
+
+		var offset = el.offset();
+		var w = config.width || dw;
+		var ma = 35;
+
+		if (position === 'right') {
+			offset.left -= w - el.width();
+			ma = w - 35;
+		} else if (position === 'center') {
+			ma = (w / 2);
+			offset.left -= ma - (el.width() / 2);
+			ma -= 12;
+		}
+
+		offset.top += el.height() + 10;
+
+		if (offsetX)
+			offset.left += offsetX;
+
+		if (offsetY)
+			offset.top += offsetY;
+
+		config.reload && EXEC(config.reload, self);
+		config.default && DEFAULT(config.default, true);
+
+		self.find('.ui-inlineform-arrow').css('margin-left', ma);
+		self.css(offset);
+
+		var el = self.find('input[type="text"],select,textarea');
+		!isMOBILE && el.length && el[0].focus();
+
+		setTimeout(function() {
+			self.find('.ui-inlineform').aclass('ui-inlineform-animate');
+		}, 300);
+	};
+});
+
+COMPONENT('importer', function(self, config) {
+
+	var init = false;
+	var clid = null;
+
+	self.readonly();
+	self.setter = function(value) {
+
+		if (config.if !== value) {
+			if (config.cleaner && init && !clid)
+				clid = setTimeout(self.clean, config.cleaner * 60000);
+			return;
+		}
+
+		if (clid) {
+			clearTimeout(clid);
+			clid = null;
+		}
+
+		if (init) {
+			config.reload && EXEC(config.reload);
+			return;
+		}
+
+		init = true;
+		self.import(config.url, function() {
+			config.reload && EXEC(config.reload);
+		});
+	};
+
+	self.clean = function() {
+		config.clean && EXEC(config.clean);
+		setTimeout(function() {
+			self.empty();
+			init = false;
+			clid = null;
+		}, 1000);
+	};
+});
+
+COMPONENT('checkbox', function(self, config) {
+
+	self.validate = function(value) {
+		return (config.disabled || !config.required) ? true : (value === true || value === 'true' || value === 'on');
+	};
+
+	self.configure = function(key, value, init) {
+		if (init)
+			return;
+		switch (key) {
+			case 'label':
+				self.find('span').html(value);
+				break;
+			case 'required':
+				self.find('span').tclass('ui-checkbox-label-required', value);
+				break;
+			case 'disabled':
+				self.tclass('ui-disabled', value);
+				break;
+			case 'checkicon':
+				self.find('i').rclass2('fa-').aclass('fa-' + value);
+				break;
+		}
+	};
+
+	self.make = function() {
+		self.aclass('ui-checkbox');
+		self.html('<div><i class="fa fa-{2}"></i></div><span{1}>{0}</span>'.format(config.label || self.html(), config.required ? ' class="ui-checkbox-label-required"' : '', config.checkicon || 'check'));
+		config.disabled && self.aclass('ui-disabled');
+		self.event('click', function() {
+			if (config.disabled)
+				return;
+			self.dirty(false);
+			self.getter(!self.get());
+		});
+	};
+
+	self.setter = function(value) {
+		self.tclass('ui-checkbox-checked', !!value);
+	};
+});
+
+COMPONENT('textbox', function(self, config) {
+
+	var input, container, content = null;
+
+	self.validate = function(value) {
+
+		if (!config.required || config.disabled)
+			return true;
+
+		if (self.type === 'date')
+			return value instanceof Date && !isNaN(value.getTime());
+
+		if (value == null)
+			value = '';
+		else
+			value = value.toString();
+
+		EMIT('reflow', self.name);
+
+		if (config.minlength && value.length < config.minlength)
+			return false;
+
+		switch (self.type) {
+			case 'email':
+				return value.isEmail();
+			case 'phone':
+				return value.isPhone();
+			case 'url':
+				return value.isURL();
+			case 'currency':
+			case 'number':
+				return value > 0;
+		}
+
+		return config.validation ? !!self.evaluate(value, config.validation, true) : value.length > 0;
+	};
+
+	self.make = function() {
+
+		content = self.html();
+
+		self.type = config.type;
+		self.format = config.format;
+
+		self.event('click', '.fa-calendar', function(e) {
+			if (config.disabled)
+				return;
+			if (config.type === 'date') {
+				e.preventDefault();
+				SETTER('calendar', 'toggle', self.element, self.get(), function(date) {
+					self.change(true);
+					self.set(date);
+				});
+			}
+		});
+
+		self.event('click', '.fa-caret-up,.fa-caret-down', function() {
+			if (config.disabled)
+				return;
+			if (config.increment) {
+				var el = $(this);
+				var inc = el.hclass('fa-caret-up') ? 1 : -1;
+				self.change(true);
+				self.inc(inc);
+			}
+		});
+
+		self.event('click', '.ui-textbox-control-icon', function() {
+			if (config.disabled)
+				return;
+			if (self.type === 'search') {
+				self.$stateremoved = false;
+				$(this).rclass('fa-times').aclass('fa-search');
+				self.set('');
+			} else if (config.icon2click)
+				EXEC(config.icon2click, self);
+		});
+
+		self.event('focus', 'input', function() {
+			config.autocomplete && EXEC(config.autocomplete, self);
+		});
+
+		self.redraw();
+	};
+
+	self.redraw = function() {
+
+		var attrs = [];
+		var builder = [];
+		var tmp = 'text';
+
+		switch (config.type) {
+			case 'password':
+				tmp = config.type;
+				break;
+			case 'number':
+			case 'phone':
+				isMOBILE && (tmp = 'tel');
+				break;
+		}
+
+		self.tclass('ui-disabled', config.disabled === true);
+		self.type = config.type;
+		attrs.attr('type', tmp);
+		config.placeholder && attrs.attr('placeholder', config.placeholder);
+		config.maxlength && attrs.attr('maxlength', config.maxlength);
+		config.keypress != null && attrs.attr('data-jc-keypress', config.keypress);
+		config.delay && attrs.attr('data-jc-keypress-delay', config.delay);
+		config.disabled && attrs.attr('disabled');
+		config.readonly && attrs.attr('readonly');
+		config.error && attrs.attr('error');
+		attrs.attr('data-jc-bind', '');
+
+		config.autofill && attrs.attr('name', self.path.replace(/\./g, '_'));
+		config.align && attrs.attr('class', 'ui-' + config.align);
+		!isMOBILE && config.autofocus && attrs.attr('autofocus');
+
+		builder.push('<div class="ui-textbox-input"><input {0} /></div>'.format(attrs.join(' ')));
+
+		var icon = config.icon;
+		var icon2 = config.icon2;
+
+		if (!icon2 && self.type === 'date')
+			icon2 = 'calendar';
+		else if (self.type === 'search') {
+			icon2 = 'search';
+			self.setter2 = function(value) {
+				if (self.$stateremoved && !value)
+					return;
+				self.$stateremoved = !value;
+				self.find('.ui-textbox-control-icon').tclass('fa-times', !!value).tclass('fa-search', !value);
+			};
+		}
+
+		icon2 && builder.push('<div class="ui-textbox-control"><span class="fa fa-{0} ui-textbox-control-icon"></span></div>'.format(icon2));
+		config.increment && !icon2 && builder.push('<div class="ui-textbox-control"><span class="fa fa-caret-up"></span><span class="fa fa-caret-down"></span></div>');
+
+		if (config.label)
+			content = config.label;
+
+		if (content.length) {
+			var html = builder.join('');
+			builder = [];
+			builder.push('<div class="ui-textbox-label{0}">'.format(config.required ? ' ui-textbox-label-required' : ''));
+			icon && builder.push('<i class="fa fa-{0}"></i> '.format(icon));
+			builder.push('<span>' + content + (content.substring(content.length - 1) === '?' ? '' : ':') + '</span>');
+			builder.push('</div><div class="ui-textbox">{0}</div>'.format(html));
+			config.error && builder.push('<div class="ui-textbox-helper"><i class="fa fa-warning" aria-hidden="true"></i> {0}</div>'.format(config.error));
+			self.html(builder.join(''));
+			self.aclass('ui-textbox-container');
+			input = self.find('input');
+			container = self.find('.ui-textbox');
+		} else {
+			config.error && builder.push('<div class="ui-textbox-helper"><i class="fa fa-warning" aria-hidden="true"></i> {0}</div>'.format(config.error));
+			self.aclass('ui-textbox ui-textbox-container');
+			self.html(builder.join(''));
+			input = self.find('input');
+			container = self.element;
+		}
+	};
+
+	self.configure = function(key, value, init) {
+
+		if (init)
+			return;
+
+		var redraw = false;
+
+		switch (key) {
+			case 'readonly':
+				self.find('input').prop('readonly', value);
+				break;
+			case 'disabled':
+				self.tclass('ui-disabled', value);
+				self.find('input').prop('disabled', value);
+				break;
+			case 'format':
+				self.format = value;
+				self.refresh();
+				break;
+			case 'required':
+				self.noValid(!value);
+				!value && self.state(1, 1);
+				self.find('.ui-textbox-label').tclass('ui-textbox-label-required', value);
+				break;
+			case 'placeholder':
+				input.prop('placeholder', value || '');
+				break;
+			case 'maxlength':
+				input.prop('maxlength', value || 1000);
+				break;
+			case 'autofill':
+				input.prop('name', value ? self.path.replace(/\./g, '_') : '');
+				break;
+			case 'label':
+				if (content && value)
+					self.find('.ui-textbox-label span').html(value);
+				else
+					redraw = true;
+				content = value;
+				break;
+			case 'type':
+				self.type = value;
+				if (value === 'password')
+					value = 'password';
+				else
+					self.type = 'text';
+				self.find('input').prop('type', self.type);
+				break;
+			case 'align':
+				input.rclass(input.attr('class')).aclass('ui-' + value || 'left');
+				break;
+			case 'autofocus':
+				input.focus();
+				break;
+			case 'icon':
+				var tmp = self.find('.ui-textbox-label .fa');
+				if (tmp.length)
+					tmp.rclass2('fa-').aclass('fa-' + value);
+				else
+					redraw = true;
+				break;
+			case 'icon2':
+			case 'increment':
+				redraw = true;
+				break;
+		}
+
+		redraw && setTimeout2('redraw.' + self.id, function() {
+			self.redraw();
+			self.refresh();
+		}, 100);
+	};
+
+	self.formatter(function(path, value) {
+		return config.type === 'date' ? (value ? value.format(config.format || 'yyyy-MM-dd') : value) : value;
+	});
+
+	self.parser(function(path, value) {
+		return value ? config.spaces === false ? value.replace(/\s/g, '') : value : value;
+	});
+
+	self.state = function(type) {
+		if (!type)
+			return;
+		var invalid = config.required ? self.isInvalid() : false;
+		if (invalid === self.$oldstate)
+			return;
+		self.$oldstate = invalid;
+		container.tclass('ui-textbox-invalid', invalid);
+		config.error && self.find('.ui-textbox-helper').tclass('ui-textbox-helper-show', invalid);
 	};
 });

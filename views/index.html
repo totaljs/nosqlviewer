@@ -27,8 +27,9 @@
 				</div>
 				<button name="open" data-jc="filebrowser__null__exec:browser/process"><i class="fa fa-folder-o"></i>@(Open)</button>
 				<span></span>
-				<button name="save" class="hidden filled exec" data-exec="browser/save"><i class="fa fa-floppy-o"></i>@(Save)</button>
-				<button name="remove" class="hidden filled exec red" data-bind="browser.checked__show:value && value.length > 0" data-exec="browser/remove"><i class="fa fa-times-circle"></i>@(Remove rows)</button>
+				<button name="csv" class="hidden filled exec" data-exec="browser/csv" title="@(CSV export)"><i class="fa fa-file-alt"></i>@(Export)</button>
+				<button name="save" class="hidden filled exec" data-exec="browser/save" title="@(Download file)"><i class="fa fa-floppy-o"></i>@(Save)</button>
+				<button name="remove" class="hidden exec red" data-bind="browser.checked__show:value && value.length > 0" data-exec="browser/remove"><i class="fa fa-times-circle"></i>@(Remove rows)</button>
 			</nav>
 		</div>
 
@@ -87,6 +88,8 @@
 		</div>
 	</div>
 
+	<div data-jc="importer__common.inlineform__if:csv;url:/forms/csv.html"></div>
+
 	<script>
 
 		$(window).on('paste', function(e) {
@@ -131,6 +134,64 @@
 				setTimeout(function() {
 					document.execCommand('paste');
 				}, 100);
+			};
+
+			exports.csv = function(el) {
+				!window.csvexport && SET('csvexport.fields', browser.header.join(', '));
+				SET('common.inlineform', 'csv');
+				SETTER(true, 'inlineform', 'toggle', el, 'left', 0, 10);
+			};
+
+			exports.csvexport = function() {
+
+				var fields = csvexport.fields.split(',').trim();
+				var rows = FIND('datagrid').rows();
+				var data = [];
+				var sub = [];
+
+				if (!fields.length)
+					fields = browser.header;
+
+				if (csvexport.header) {
+					for (var j = 0; j < fields.length; j++)
+						sub.push(fields[j]);
+					data.push(sub.join(csvexport.separator));
+				}
+
+				for (var i = 0; i < rows.length; i++) {
+					var row = rows[i];
+					sub = [];
+					for (var j = 0; j < fields.length; j++) {
+						var f = fields[j];
+						var v = row[f];
+						switch (typeof(v)) {
+							case 'string':
+								if (csvexport.quotes)
+									v = '"{0}"'.format(v.replace(/\"/g, '\\"'));
+								break;
+							case 'number':
+								v = v.toString();
+								if (csvexport.decimal !== '.')
+									v = v.replace('.', csvexport.decimal);
+								break;
+							case 'boolean':
+								break;
+							case 'object':
+								if (v instanceof Date)
+									v = v.format(csvexport.format || 'yyyyMMdd');
+								else
+									v = '';
+								break;
+						}
+						sub.push(v);
+					}
+
+					data.push(sub.join(csvexport.separator));
+				}
+
+				var filename = browser.filename.replace(/\.(nosql|table)$/, '.csv');
+				var file = new File([data.join('\n')], filename, { type: 'text/csv;charset=utf-8' });
+				saveAs(file, filename, true);
 			};
 
 			exports.update = function() {
@@ -237,10 +298,12 @@
 			};
 
 			exports.parse = function(data) {
+
 				var lines = data.split('\n');
 				var tmp = {};
 				var cols = [];
 				var rows = [];
+				var header = [];
 
 				for (var i = 0; i < lines.length; i++) {
 					var line = lines[i].trim();
@@ -273,11 +336,13 @@
 						col.alignfilter = 'center';
 						col.template = '{{ {0} | nosqlrender }}'.format(key);
 						cols.push(col);
+						header.push(key);
 					}
 
 					rows.push(doc);
 				}
 
+				browser.header = header;
 				SET('browser.schema', null);
 				exports.refresh(rows, cols);
 			};
@@ -330,7 +395,7 @@
 				var lines = data.split('\n');
 				var cols = [];
 				var rows = [];
-
+				var header = [];
 				var schema = exports.parseTableSchema(lines[0]);
 
 				for (var j = 0; j < schema.length; j++) {
@@ -340,7 +405,10 @@
 					col.alignfilter = 'center';
 					col.template = '{{ {0} | nosqlrender }}'.format(col.name);
 					cols.push(col);
+					header.push(col.name);
 				}
+
+				browser.header = header;
 
 				for (var i = 1; i < lines.length; i++) {
 					var line = lines[i].trim();

@@ -8,10 +8,17 @@ body {}
 #content { height: 100%; }
 
 .padding { padding: 20px; }
+.npb { padding-bottom: 0 !important; }
+.npt { padding-top: 0 !important; }
 
 .m { margin-bottom: 20px; }
 .b { font-weight: bold; }
 .red { color: red !important; }
+
+.fs11 { font-size: 11px; color: #A0A0A0; }
+.mt5 { margin-top: 5px; }
+.nmt { margin-top: 0; }
+.nmb { margin-bottom: 0; }
 
 .nosql-undefined { display: block; text-align: center; color: #A0A0A0; }
 .nosql-null { display: block; text-align: center; color: gray; }
@@ -42,3 +49,7 @@ body {}
 .mr5 { margin-right: 5px; }
 
 .help { color: #909090; font-size: 11px; margin: 20px 0 0 0; border-top: 1px solid #E0E0E0; padding: 10px 0; }
+
+.csvexport .ui-textbox { height: 24px; }
+.csvexport .ui-textbox-input { padding: 0 2px 0 5px; }
+.csvexport .ui-textbox-input input { font-size: 11px; height: 22px; }
