@@ -353,8 +353,8 @@
 					rows.push(doc);
 				}
 
-				browser.header = header;
 				SET('browser.schema', null);
+				browser.header = header;
 				exports.refresh(rows, cols);
 			};
 
@@ -362,7 +362,9 @@
 				var schema = [];
 				row.split('|').forEach(function(item) {
 					var a = item.split(':');
-					schema.push({ name: a[0].trim(), type: a[1].trim() || 'string' });
+					try {
+						schema.push({ name: a[0].trim(), type: a[1].trim() || 'string' });
+					} catch (e) {}
 				});
 				return schema;
 			};
@@ -419,7 +421,7 @@
 					header.push(col.name);
 				}
 
-				browser.header = header;
+				SET('browser.header', header);
 
 				for (var i = 1; i < lines.length; i++) {
 					var line = lines[i].trim();
