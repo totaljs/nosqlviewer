@@ -1,23 +1,23 @@
-<div data-jc="inlineform__null__width:400;title:@(Export to CSV);icon:file-alt" class="hidden csvexport">
+<div data---="inlineform__null__width:400;title:@(Export to CSV);icon:file-alt" class="hidden csvexport">
 	<div class="padding">
-		<div data-jc="checkbox__csvexport.header">@(Append header)</div>
-		<div data-jc="checkbox__csvexport.quotes">@(Wrap string values with quotes)</div>
-		<div data-jc="checkbox__csvexport.filter">@(Get filtered rows only)</div>
+		<div data---="checkbox__csvexport.header">@(Append header)</div>
+		<div data---="checkbox__csvexport.quotes">@(Wrap string values with quotes)</div>
+		<div data---="checkbox__csvexport.filter">@(Get filtered rows only)</div>
 	</div>
 	<hr class="nmt nmb" />
 	<div class="padding">
 		<div class="row">
 			<div class="col-xs-4 m">
-				<div data-jc="textbox__csvexport.separator__align:center;required:true__';'">@(Separator)</div>
+				<div data---="textbox__csvexport.separator__align:center;required:true__';'">@(Separator)</div>
 			</div>
 			<div class="col-xs-4 m">
-				<div data-jc="textbox__csvexport.decimal__align:center;required:true__'.'">@(Decimal)</div>
+				<div data---="textbox__csvexport.decimal__align:center;required:true__'.'">@(Decimal)</div>
 			</div>
 			<div class="col-xs-4 m">
-				<div data-jc="textbox__csvexport.format__align:center;required:true__'yyyyMMdd'">@(Date)</div>
+				<div data---="textbox__csvexport.format__align:center;required:true__'yyyyMMdd'">@(Date)</div>
 			</div>
 		</div>
-		<div data-jc="textbox__csvexport.fields__required:true">@(Fields)</div>
+		<div data---="textbox__csvexport.fields__required:true">@(Fields)</div>
 		<div class="fs11 m mt5">@(Divided all fields by <b>comma</b>.)</div>
 		<button name="submit" class="button button-small b exec" data-exec="browser/csvexport">@(EXPORT TO CSV)</button>
 	</div>

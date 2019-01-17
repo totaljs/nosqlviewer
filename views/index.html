@@ -9,25 +9,25 @@
 	<meta name="format-detection" content="telephone=no" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 	<meta name="robots" content="all,follow" />
-	<link rel="stylesheet" href="//cdn.componentator.com/spa.min@15.css" />
-	<script src="//cdn.componentator.com/spa.min@15.js"></script>
+	<link rel="stylesheet" href="//cdn.componentator.com/spa.min@17.css" />
+	<script src="//cdn.componentator.com/spa.min@17.js"></script>
 	@{import('meta', 'head', 'default.css', 'default.js', 'favicon.ico')}
 </head>
-<body data-jc="exec">
+<body data---="exec">
 
-	<div data-jc="LAZY confirm"></div>
-	<div data-jc="LAZY clipboard"></div>
-	<div data-jc="LAZY snackbar"></div>
-	<div data-jc="loading" class="hidden"></div>
+	<div data---="LAZY confirm"></div>
+	<div data---="LAZY clipboard"></div>
+	<div data---="LAZY snackbar"></div>
+	<div data---="loading" class="hidden"></div>
 
-	<div data-jc="dragdropfiles__null__exec:browser/process" style="height:100%">
+	<div data---="dragdropfiles__null__exec:browser/process" style="height:100%">
 
 		<div class="padding" style="padding-bottom:0">
 			<nav class="toolbar" data-bind="browser.rows__show .filled:value instanceof Array">
 				<div class="hidden info filled">
-					<span data-bind="browser.filename__text:value"></span> / <b data-bind="browser.rows__!html:value.length.pluralize(@('# documents', '# document', '# documents', '# documents'))"></b>
+					<span data-bind="browser.filename__text"></span> / <b data-bind="browser.rows__!html:value.length.pluralize(@('# documents', '# document', '# documents', '# documents'))"></b>
 				</div>
-				<button name="open" data-jc="filebrowser__null__exec:browser/process"><i class="fa fa-folder-o"></i>@(Open)</button>
+				<button name="open" data---="filebrowser__null__exec:browser/process"><i class="fa fa-folder-o"></i>@(Open)</button>
 				<span></span>
 				<button name="csv" class="hidden filled exec" data-exec="browser/csv" title="@(CSV export)"><i class="fa fa-file-alt"></i>@(Export)</button>
 				<button name="save" class="hidden filled exec" data-exec="browser/save" title="@(Download file)"><i class="fa fa-floppy-o"></i>@(Save)</button>
@@ -72,16 +72,16 @@
 		</div>
 
 		<div class="padding hidden" data-bind="browser.rows__show:value != null" style="padding-top:0">
-			<div data-jc="datagrid__browser.rows__click:browser/detail;colwidth:180;checked:browser.checked"></div>
+			<div data---="datagrid__browser.rows__click:browser/detail;colwidth:180;checked:browser.checked"></div>
 		</div>
 
 	</div>
 
-	<div data-jc="panel__common.panel__if:detail;icon:box;title:Document editor;width:400;background:false" class="hidden">
+	<div data---="panel__common.panel__if:detail;icon:box;title:@(Document editor);width:400;background:false" class="hidden">
 		<div class="padding">
-			<div data-jc="objecteditor__browser.detail__skip:ROW" class="m"></div>
+			<div data---="objecteditor__browser.detail__skip:ROW" class="m"></div>
 			<div class="row">
-				<div class="col-xs-8 m" data-jc="validation__browser.detail">
+				<div class="col-xs-8 m" data---="validation__browser.detail">
 					<button name="submit" class="button button-small b exec" data-exec="browser/update" disabled><i class="fa fa-check-circle"></i>@(Update data)</button>
 				</div>
 				<div class="col-xs-4 m">
@@ -91,7 +91,7 @@
 		</div>
 	</div>
 
-	<div data-jc="importer__common.inlineform__if:csv;url:/forms/csv.html"></div>
+	<div data---="importer__common.inlineform__if:csv;url:/forms/csv.html"></div>
 
 	<script>
 
@@ -516,6 +516,7 @@
 		var params = READPARAMS();
 		params.url && AJAX('GET /api/download/', { url: params.url }, function(response) {
 			if (response) {
+				SET('browser.open', true);
 				SET('browser.filename', params.url);
 				EXEC('browser/parse', response);
 			}
